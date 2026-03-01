@@ -4,6 +4,32 @@
 // Tree-sitter grammar for Alloy 6
 // Based on the authoritative CUP parser (Alloy.cup) and lexer (Alloy.lex)
 
+// Precedence levels (lowest to highest), matching CUP grammar ordering
+const PREC = {
+  QUANTIFIER: -1,
+  SEQ: 0,
+  OR: 1,
+  IFF: 2,
+  IMPLIES: 3,
+  AND: 4,
+  TEMP_BINARY: 5,
+  NOT: 6,
+  COMPARE: 7,
+  MULTIPLICITY: 8,
+  SHIFT: 9,
+  PLUS_MINUS: 10,
+  CARDINALITY: 11,
+  OVERRIDE: 12,
+  INTERSECT: 13,
+  ARROW: 14,
+  DOMAIN: 15,
+  RANGE: 16,
+  BRACKET: 17,
+  DOT: 18,
+  UNOP: 19,
+  PRIME: 20,
+};
+
 module.exports = grammar({
   name: "alloy",
 
@@ -22,37 +48,6 @@ module.exports = grammar({
     [$.scope, $.type_scope_number],
     // name can reduce to name_list or qual_name depending on context
     [$.name_list, $.qual_name],
-    // arrow multiplicity: expr before lone/one/some -> needs GLR forking
-    [$.arrow_expression, $.block_expression],
-    [$.arrow_expression, $.let_decl],
-  ],
-
-  precedences: $ => [
-    // From CUP grammar precedence declarations (lowest to highest)
-    [
-      'seq',          // ; (trace sequence)
-      'or',           // || or
-      'iff',          // <=> iff
-      'implies',      // => implies
-      'and',          // && and
-      'temp_binary',  // until since releases triggered
-      'not',          // ! not + temporal unary
-      'compare',      // = != in !in < > <= >= binary comparisons
-      'multiplicity', // no some lone one set seq (prefix tests)
-      'shift',        // << >> >>>
-      'plus_minus',   // + -
-      'cardinality',  // # (cardinality prefix)
-      'override',     // ++
-      'intersect',    // &
-      'arrow',        // -> and multiplicity arrows
-      'domain',       // <:
-      'range',        // :>
-      'bracket',      // [...]
-      'dot',          // .
-      'unop',         // ~ ^ * (closures/transpose)
-      'prime',        // ' (postfix prime)
-      'primary',      // atoms
-    ],
   ],
 
   rules: {
@@ -325,28 +320,28 @@ module.exports = grammar({
     ),
 
     // ; (trace sequence) - lowest precedence, right-assoc
-    seq_expression: $ => prec.right('seq', seq(
+    seq_expression: $ => prec.right(PREC.SEQ, seq(
       $._expression,
       ';',
       $._expression,
     )),
 
     // || or
-    or_expression: $ => prec.left('or', seq(
+    or_expression: $ => prec.left(PREC.OR, seq(
       $._expression,
       choice('||', 'or'),
       $._expression,
     )),
 
     // <=> iff
-    iff_expression: $ => prec.left('iff', seq(
+    iff_expression: $ => prec.left(PREC.IFF, seq(
       $._expression,
       choice('<=>', 'iff'),
       $._expression,
     )),
 
     // => implies (right-assoc, with optional else for if-then-else)
-    implies_expression: $ => prec.right('implies', seq(
+    implies_expression: $ => prec.right(PREC.IMPLIES, seq(
       $._expression,
       choice('=>', 'implies'),
       $._expression,
@@ -354,21 +349,21 @@ module.exports = grammar({
     )),
 
     // && and
-    and_expression: $ => prec.left('and', seq(
+    and_expression: $ => prec.left(PREC.AND, seq(
       $._expression,
       choice('&&', 'and'),
       $._expression,
     )),
 
     // Temporal binary: until since releases triggered
-    temporal_binary_expression: $ => prec.left('temp_binary', seq(
+    temporal_binary_expression: $ => prec.left(PREC.TEMP_BINARY, seq(
       $._expression,
       field('operator', choice('until', 'since', 'releases', 'triggered')),
       $._expression,
     )),
 
     // Unary prefix: ! not always eventually after before historically once
-    unary_expression: $ => prec('not', seq(
+    unary_expression: $ => prec(PREC.NOT, seq(
       field('operator', choice(
         '!', 'not',
         'always', 'eventually', 'after', 'before', 'historically', 'once',
@@ -377,10 +372,11 @@ module.exports = grammar({
     )),
 
     // Binary comparisons
-    compare_expression: $ => prec.left('compare', seq(
+    compare_expression: $ => prec.left(PREC.COMPARE, seq(
       $._expression,
       field('operator', choice(
         '=', '!=', 'in', '!in',
+        token(prec(1, seq('not', /\s+/, 'in'))),
         '<', '>', '<=', '>=', '=<',
         '!<', '!>', '!<=', '!>=',
       )),
@@ -388,20 +384,20 @@ module.exports = grammar({
     )),
 
     // Multiplicity tests (unary prefix, higher precedence than binary compare)
-    multiplicity_expression: $ => prec('multiplicity', seq(
+    multiplicity_expression: $ => prec(PREC.MULTIPLICITY, seq(
       field('operator', choice('no', 'some', 'lone', 'one', 'set', 'seq')),
       $._expression,
     )),
 
     // Shift: << >> >>>
-    shift_expression: $ => prec.left('shift', seq(
+    shift_expression: $ => prec.left(PREC.SHIFT, seq(
       $._expression,
       field('operator', choice('<<', '>>>', '>>')),
       $._expression,
     )),
 
     // Plus/minus: + -
-    plus_minus_expression: $ => prec.left('plus_minus', seq(
+    plus_minus_expression: $ => prec.left(PREC.PLUS_MINUS, seq(
       $._expression,
       field('operator', choice('+', '-')),
       $._expression,
@@ -409,51 +405,61 @@ module.exports = grammar({
 
     // Cardinality/cast: # expr, int expr, sum expr (unary prefix)
     // CUP grammar: NumUnopExpr level, between MulExpr and OverrideExpr
-    cardinality_expression: $ => prec('cardinality', seq(
+    cardinality_expression: $ => prec(PREC.CARDINALITY, seq(
       field('operator', choice('#', 'int', 'sum')),
       $._expression,
     )),
 
     // Override: ++
-    override_expression: $ => prec.left('override', seq(
+    override_expression: $ => prec.left(PREC.OVERRIDE, seq(
       $._expression,
       '++',
       $._expression,
     )),
 
     // Intersection: &
-    intersect_expression: $ => prec.left('intersect', seq(
+    intersect_expression: $ => prec.left(PREC.INTERSECT, seq(
       $._expression,
       '&',
       $._expression,
     )),
 
     // Arrow: -> with optional multiplicity annotations
-    // The CUP grammar's CompFilter merges multiplicity keywords with ->
-    arrow_expression: $ => prec.right('arrow', seq(
+    // Left multiplicities are combined into single lexer tokens ('some ->', etc.)
+    // to avoid shift-reduce conflict with 'some'/'one'/'lone' starting new
+    // expressions (quantified/multiplicity) after another expression in blocks.
+    arrow_expression: $ => prec.right(PREC.ARROW, seq(
       $._expression,
-      optional(field('left_mult', choice('some', 'one', 'lone'))),
-      '->',
+      field('operator', choice(
+        '->',
+        $.some_arrow_op,
+        $.one_arrow_op,
+        $.lone_arrow_op,
+      )),
       optional(field('right_mult', choice('some', 'one', 'lone'))),
       $._expression,
     )),
 
+    some_arrow_op: $ => token(prec(1, seq('some', /[\s]+/, '->'))),
+    one_arrow_op: $ => token(prec(1, seq('one', /[\s]+/, '->'))),
+    lone_arrow_op: $ => token(prec(1, seq('lone', /[\s]+/, '->'))),
+
     // Domain restriction: <:
-    domain_expression: $ => prec.left('domain', seq(
+    domain_expression: $ => prec.left(PREC.DOMAIN, seq(
       $._expression,
       '<:',
       $._expression,
     )),
 
     // Range restriction: :>
-    range_expression: $ => prec.left('range', seq(
+    range_expression: $ => prec.left(PREC.RANGE, seq(
       $._expression,
       ':>',
       $._expression,
     )),
 
     // Box join: expr[exprs]
-    box_join_expression: $ => prec.left('bracket', seq(
+    box_join_expression: $ => prec.left(PREC.BRACKET, seq(
       $._expression,
       '[',
       optional($.expr_list),
@@ -461,26 +467,26 @@ module.exports = grammar({
     )),
 
     // Dot join: .
-    dot_expression: $ => prec.left('dot', seq(
+    dot_expression: $ => prec.left(PREC.DOT, seq(
       $._expression,
       '.',
       $._expression,
     )),
 
     // Closure/transpose: ~ ^ *
-    closure_expression: $ => prec('unop', seq(
+    closure_expression: $ => prec(PREC.UNOP, seq(
       field('operator', choice('~', '^', '*')),
       $._expression,
     )),
 
     // Prime: postfix '
-    prime_expression: $ => prec('prime', seq(
+    prime_expression: $ => prec(PREC.PRIME, seq(
       $._expression,
       "'",
     )),
 
     // ---- Quantified expressions ----
-    quantified_expression: $ => prec.right('not', seq(
+    quantified_expression: $ => prec.right(PREC.QUANTIFIER, seq(
       choice('all', 'no', 'some', 'lone', 'one', 'sum'),
       $.decl_list,
       choice(
@@ -490,7 +496,7 @@ module.exports = grammar({
     )),
 
     // ---- Let expression ----
-    let_expression: $ => prec.right('not', seq(
+    let_expression: $ => prec.right(PREC.QUANTIFIER, seq(
       'let',
       $.let_binding,
       choice(
@@ -507,7 +513,7 @@ module.exports = grammar({
     ),
 
     // ---- Primary expressions ----
-    _primary_expression: $ => prec('primary', choice(
+    _primary_expression: $ => choice(
       $.number,
       $.string,
       $.qual_name,
@@ -520,7 +526,7 @@ module.exports = grammar({
       $.paren_expression,
       $.block_expression,
       $.set_comprehension,
-    )),
+    ),
 
     this_expr: $ => 'this',
     iden_expr: $ => 'iden',
