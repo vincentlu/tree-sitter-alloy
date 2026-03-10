@@ -20,6 +20,19 @@ Add to your config:
 
 Then run `M-x treesit-install-language-grammar` and select `alloy`.
 
+For older tree-sitter library versions, use the `abi-13` or `abi-14` tags:
+
+```elisp
+(add-to-list 'treesit-language-source-alist
+             '(alloy "https://github.com/vincentlu/tree-sitter-alloy" "abi-14"))
+```
+
+| Tag      | ABI version | tree-sitter CLI |
+|----------|-------------|-----------------|
+| `abi-13` | 13          | 0.20.6          |
+| `abi-14` | 14          | 0.24.7          |
+| `main`   | 15          | 0.26.6          |
+
 ### Neovim
 
 Add the parser to your tree-sitter config via
