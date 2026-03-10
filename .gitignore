@@ -2,3 +2,4 @@ node_modules/
 *.dylib
 *.so
 *.dll
+*.o
