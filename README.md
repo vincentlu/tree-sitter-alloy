@@ -9,21 +9,40 @@ commands.
 
 ## Usage
 
+### Emacs (29+)
+
+Add to your config:
+
+```elisp
+(add-to-list 'treesit-language-source-alist
+             '(alloy "https://github.com/vincentlu/tree-sitter-alloy"))
+```
+
+Then run `M-x treesit-install-language-grammar` and select `alloy`.
+
 ### Neovim
 
 Add the parser to your tree-sitter config via
 [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter).
 A `highlights.scm` query is included in `queries/`.
 
-### Emacs
-
-Use with [emacs-tree-sitter](https://github.com/emacs-tree-sitter/elisp-tree-sitter)
-or the built-in `treesit` module (Emacs 29+). File type: `*.als`.
-
 ### Helix
 
 Place the compiled grammar and `queries/highlights.scm` in
 `runtime/grammars/sources/alloy/` and add an entry to `languages.toml`.
+
+## Grammar overview
+
+The grammar covers all paragraph-level declarations (module, open, sig, fact,
+pred, fun, assert, enum, let, run/check commands) and the full expression
+language:
+
+- **Logical**: `or`/`||`, `and`/`&&`, `iff`/`<=>`, `implies`/`=>`, `not`/`!`
+- **Temporal**: `always`, `eventually`, `after`, `before`, `historically`, `once`, `until`, `since`, `releases`, `triggered`
+- **Relational**: `.` (join), `->` (arrow), `<:` (domain), `:>` (range), `&` (intersect), `++` (override), `+`/`-` (union/difference)
+- **Closure**: `~` (transpose), `^` (transitive), `*` (reflexive-transitive)
+- **Quantifiers**: `all`, `some`, `no`, `lone`, `one`, `sum`
+- **Other**: `#` (cardinality), `'` (prime/next-state), `[]` (box join), `;` (sequence), `let`, set comprehension
 
 ## Development
 
@@ -36,11 +55,21 @@ npx tree-sitter test
 ### Testing
 
 The test corpus (`test/corpus/`) contains 83 tests covering all grammar rules:
-declarations, expressions, temporal operators, literals, names, and comments.
+declarations, expressions, temporal operators, comparisons, literals, names,
+precedence, and quantifiers.
 
 The grammar has also been validated against 331 real-world `.als` files from the
 Alloy examples, [AlloyTools/models](https://github.com/AlloyTools/models), and
 other public repositories (100% parse rate).
+
+### Precedence
+
+Operator precedence (lowest to highest):
+
+```
+quantifier/let < ; < or < iff < implies < and < temporal < not < compare
+< multiplicity < shift < +/- < #/int/sum < ++ < & < -> < <: < :> < [] < . < ~/^/* < '
+```
 
 ## References
 
