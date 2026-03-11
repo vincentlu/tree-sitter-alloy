@@ -44,19 +44,6 @@ A `highlights.scm` query is included in `queries/`.
 Place the compiled grammar and `queries/highlights.scm` in
 `runtime/grammars/sources/alloy/` and add an entry to `languages.toml`.
 
-## Grammar overview
-
-The grammar covers all paragraph-level declarations (module, open, sig, fact,
-pred, fun, assert, enum, let, run/check commands) and the full expression
-language:
-
-- **Logical**: `or`/`||`, `and`/`&&`, `iff`/`<=>`, `implies`/`=>`, `not`/`!`
-- **Temporal**: `always`, `eventually`, `after`, `before`, `historically`, `once`, `until`, `since`, `releases`, `triggered`
-- **Relational**: `.` (join), `->` (arrow), `<:` (domain), `:>` (range), `&` (intersect), `++` (override), `+`/`-` (union/difference)
-- **Closure**: `~` (transpose), `^` (transitive), `*` (reflexive-transitive)
-- **Quantifiers**: `all`, `some`, `no`, `lone`, `one`, `sum`
-- **Other**: `#` (cardinality), `'` (prime/next-state), `[]` (box join), `;` (sequence), `let`, set comprehension
-
 ## Development
 
 ```bash
