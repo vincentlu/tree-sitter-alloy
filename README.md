@@ -39,6 +39,12 @@ Add the parser to your tree-sitter config via
 [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter).
 A `highlights.scm` query is included in `queries/`.
 
+| Neovim version | ABI | Tag      |
+|----------------|-----|----------|
+| 0.11+          | 15  | `main`   |
+| 0.9–0.10       | 14  | `abi-14` |
+| 0.8 or older   | 13  | `abi-13` |
+
 ### Helix
 
 Place the compiled grammar and `queries/highlights.scm` in
