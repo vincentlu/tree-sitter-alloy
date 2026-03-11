@@ -52,7 +52,7 @@ npx tree-sitter generate
 npx tree-sitter test
 ```
 
-### Testing
+## Testing
 
 The test corpus (`test/corpus/`) contains 83 tests covering all grammar rules:
 declarations, expressions, temporal operators, comparisons, literals, names,
@@ -61,15 +61,6 @@ precedence, and quantifiers.
 The grammar has also been validated against 331 real-world `.als` files from the
 Alloy examples, [AlloyTools/models](https://github.com/AlloyTools/models), and
 other public repositories (100% parse rate).
-
-### Precedence
-
-Operator precedence (lowest to highest):
-
-```
-quantifier/let < ; < or < iff < implies < and < temporal < not < compare
-< multiplicity < shift < +/- < #/int/sum < ++ < & < -> < <: < :> < [] < . < ~/^/* < '
-```
 
 ## References
 
