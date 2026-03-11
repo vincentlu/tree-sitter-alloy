@@ -71,7 +71,7 @@ other public repositories (100% parse rate).
 ## References
 
 - [Alloy documentation](https://alloy.readthedocs.io/en/latest/)
-- Daniel Jackson, *Software Abstractions* (MIT Press)
+- Daniel Jackson, [*Software Abstractions*](https://mitpress.mit.edu/9780262528900/software-abstractions/) (MIT Press)
 - [AlloyTools](https://github.com/AlloyTools/org.alloytools.alloy)
 
 ## License
