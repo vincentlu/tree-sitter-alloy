@@ -20,12 +20,20 @@ Add to your config:
 
 Then run `M-x treesit-install-language-grammar` and select `alloy`.
 
-For older tree-sitter library versions, use the `abi-13` or `abi-14` tags:
+Emacs links against your system's `libtree-sitter`, which determines the ABI
+version. Check with `brew info tree-sitter` (macOS) or `pkg-config --modversion tree-sitter` (Linux).
+For older versions, use the `abi-13` or `abi-14` tags:
 
 ```elisp
 (add-to-list 'treesit-language-source-alist
              '(alloy "https://github.com/vincentlu/tree-sitter-alloy" "abi-14"))
 ```
+
+| libtree-sitter | ABI | Tag      |
+|----------------|-----|----------|
+| 0.25+          | 15  | `main`   |
+| 0.21–0.24      | 14  | `abi-14` |
+| 0.20           | 13  | `abi-13` |
 
 | Tag      | ABI version | tree-sitter CLI |
 |----------|-------------|-----------------|
