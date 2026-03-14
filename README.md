@@ -9,6 +9,18 @@ commands.
 
 ## Usage
 
+### Neovim
+
+Add the parser to your tree-sitter config via
+[nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter).
+A `highlights.scm` query is included in `queries/`.
+
+| Neovim version | ABI | Tag      |
+|----------------|-----|----------|
+| 0.11+          | 15  | `main`   |
+| 0.9–0.10       | 14  | `abi-14` |
+| 0.8 or older   | 13  | `abi-13` |
+
 ### Emacs (29+)
 
 Emacs links against your system's `libtree-sitter`, and the grammar must be
@@ -43,18 +55,6 @@ Then pick the right branch from the table below and add it to your config:
 ```
 
 Then run `M-x treesit-install-language-grammar` and select `alloy`.
-
-### Neovim
-
-Add the parser to your tree-sitter config via
-[nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter).
-A `highlights.scm` query is included in `queries/`.
-
-| Neovim version | ABI | Tag      |
-|----------------|-----|----------|
-| 0.11+          | 15  | `main`   |
-| 0.9–0.10       | 14  | `abi-14` |
-| 0.8 or older   | 13  | `abi-13` |
 
 ### Helix
 
