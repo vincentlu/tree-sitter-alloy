@@ -11,29 +11,38 @@ commands.
 
 ### Emacs (29+)
 
-Add to your config:
+Emacs links against your system's `libtree-sitter`, and the grammar must be
+compiled for the matching ABI version. First, check which version you have:
 
-```elisp
-(add-to-list 'treesit-language-source-alist
-             '(alloy "https://github.com/vincentlu/tree-sitter-alloy"))
+macOS (Homebrew):
+```bash
+brew info tree-sitter
 ```
 
-Then run `M-x treesit-install-language-grammar` and select `alloy`.
-
-Emacs links against your system's `libtree-sitter`, which determines the ABI
-version. Check with `brew info tree-sitter` (macOS) or `pkg-config --modversion tree-sitter` (Linux).
-For older versions, use the `abi-13` or `abi-14` tags:
-
-```elisp
-(add-to-list 'treesit-language-source-alist
-             '(alloy "https://github.com/vincentlu/tree-sitter-alloy" "abi-14"))
+Linux / BSD:
+```bash
+pkg-config --modversion tree-sitter
 ```
+
+Then pick the right branch from the table below and add it to your config:
 
 | libtree-sitter | ABI | Tag      |
 |----------------|-----|----------|
 | 0.25+          | 15  | `main`   |
 | 0.21–0.24      | 14  | `abi-14` |
 | 0.20           | 13  | `abi-13` |
+
+```elisp
+;; For libtree-sitter 0.25+ (ABI 15) — use main (the default):
+(add-to-list 'treesit-language-source-alist
+             '(alloy "https://github.com/vincentlu/tree-sitter-alloy"))
+
+;; For older versions — specify the matching tag, e.g. abi-14:
+(add-to-list 'treesit-language-source-alist
+             '(alloy "https://github.com/vincentlu/tree-sitter-alloy" "abi-14"))
+```
+
+Then run `M-x treesit-install-language-grammar` and select `alloy`.
 
 ### Neovim
 
